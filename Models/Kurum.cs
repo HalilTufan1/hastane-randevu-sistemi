@@ -64,5 +64,7 @@ namespace HastaneRandevu.Models
 
         public int BolumId { get; set; }
         public Bolum? Bolum { get; set; }
+
+        public List<Calisan> Calisanlar { get; set; } = new List<Calisan>();
     }
 }
