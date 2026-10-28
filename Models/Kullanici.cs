@@ -71,6 +71,9 @@ namespace HastaneRandevu.Models
         // Çalışanın verdiği hizmetler (çoka çok ilişki)
         public List<Hizmet> Hizmetler { get; set; } = new List<Hizmet>();
 
+        // Haftalık çalışma saatleri
+        public List<UygunlukSaati> UygunlukSaatleri { get; set; } = new List<UygunlukSaati>();
+
         public override string Rol
         {
             get { return "Calisan"; }
@@ -79,6 +82,34 @@ namespace HastaneRandevu.Models
         public override string GorunenAd
         {
             get { return Unvan + " " + Ad + " " + Soyad; }
+        }
+
+        // Aynı gün için girilmek istenen saat, mevcut çalışma saatlerinden biriyle üst üste biniyor mu?
+        public bool SaatCakisiyorMu(DayOfWeek gun, TimeSpan baslangic, TimeSpan bitis)
+        {
+            foreach (var saat in UygunlukSaatleri)
+            {
+                if (saat.Gun == gun && baslangic < saat.Bitis && saat.Baslangic < bitis)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Verilen saat aralığı çalışanın uygunluk saatlerinden birinin içinde mi?
+        public bool UygunMu(DateTime baslangic, DateTime bitis)
+        {
+            foreach (var saat in UygunlukSaatleri)
+            {
+                if (saat.Gun == baslangic.DayOfWeek
+                    && baslangic.TimeOfDay >= saat.Baslangic
+                    && bitis.TimeOfDay <= saat.Bitis)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

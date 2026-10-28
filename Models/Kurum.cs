@@ -67,4 +67,15 @@ namespace HastaneRandevu.Models
 
         public List<Calisan> Calisanlar { get; set; } = new List<Calisan>();
     }
+
+    // Çalışanın haftanın bir gününde çalıştığı saat aralığı. Örn: Pazartesi 09:00-12:00
+    public class UygunlukSaati
+    {
+        public int Id { get; set; }
+        public DayOfWeek Gun { get; set; }
+        public TimeSpan Baslangic { get; set; }
+        public TimeSpan Bitis { get; set; }
+
+        public int CalisanId { get; set; }
+    }
 }
