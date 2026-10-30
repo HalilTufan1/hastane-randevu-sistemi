@@ -6,6 +6,11 @@
 <div class="p-4 mb-4 bg-light rounded">
     <h1>Hastane / Klinik Randevu Sistemi</h1>
     <p>Kurum, hizmet ve doktor seçerek kolayca randevu alabilirsiniz.</p>
+    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+    {
+        <a class="btn btn-primary" asp-controller="Hesap" asp-action="Giris">Giriş Yap</a>
+        <a class="btn btn-outline-primary" asp-controller="Hesap" asp-action="Kayit">Hasta Kaydı</a>
+    }
 </div>
 
 <h3>Kurumlar</h3>
@@ -32,3 +37,8 @@
         </div>
     }
 </div>
+
+@if (User.Identity == null || !User.Identity.IsAuthenticated)
+{
+    <p>Deneme hesabı: <code>admin</code> / <code>admin123</code></p>
+}

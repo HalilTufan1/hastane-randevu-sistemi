@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<div class="row">
+    <div class="col-md-5">
+        <h2>Hasta Kaydı</h2>
+
+        @if (ViewBag.Hata != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Hata</div>
+        }
+
+        <form asp-action="Kayit" method="post">
+            <div class="mb-3">
+                <label class="form-label">Ad</label>
+                <input name="ad" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Soyad</label>
+                <input name="soyad" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Telefon</label>
+                <input name="telefon" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Kullanıcı Adı</label>
+                <input name="kullaniciAdi" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Şifre (en az 6 karakter)</label>
+                <input name="sifre" type="password" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+        </form>
+    </div>
+</div>
