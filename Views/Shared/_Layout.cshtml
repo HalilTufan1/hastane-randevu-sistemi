@@ -18,6 +18,11 @@
                 <div class="navbar-collapse collapse">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+
+                        @if (User.IsInRole("Yonetici") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Yonetim" asp-action="Index">Kurumlar</a></li>
+                        }
                     </ul>
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated)

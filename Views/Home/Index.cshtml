@@ -40,5 +40,10 @@
 
 @if (User.Identity == null || !User.Identity.IsAuthenticated)
 {
-    <p>Deneme hesabı: <code>admin</code> / <code>admin123</code></p>
+    <h5>Deneme hesapları</h5>
+    <ul>
+        <li>Hastane yöneticisi: <code>yonetici</code> / <code>yonetici123</code></li>
+        <li>Klinik yöneticisi: <code>klinik</code> / <code>klinik123</code></li>
+        <li>Üst düzey yönetici (admin): <code>admin</code> / <code>admin123</code></li>
+    </ul>
 }

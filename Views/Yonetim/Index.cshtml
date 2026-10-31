@@ -1,0 +1,101 @@
+@model List<Kurum>
+@{
+    ViewData["Title"] = "Kurumlar";
+    bool admin = User.IsInRole("Admin");
+}
+
+<h2>@(admin ? "Tüm Kurumlar" : "Kurumum")</h2>
+
+@foreach (var kurum in Model)
+{
+    <div class="card mb-3">
+        <div class="card-header"><b>@kurum.Ad</b> (@kurum.Tur)</div>
+        <div class="card-body">
+            @if (kurum.Subeler.Count == 0)
+            {
+                <p class="text-muted">Henüz şube yok.</p>
+            }
+            @foreach (var sube in kurum.Subeler)
+            {
+                <h5>@sube.Ad <small class="text-muted">@sube.Adres - @sube.AcilisSaati.ToString(@"hh\:mm")-@sube.KapanisSaati.ToString(@"hh\:mm")</small></h5>
+                <ul>
+                    @foreach (var bolum in sube.Bolumler)
+                    {
+                        <li>
+                            <b>@bolum.Ad</b>
+                            <ul>
+                                @foreach (var hizmet in bolum.Hizmetler)
+                                {
+                                    <li>@hizmet.Ad - @hizmet.SureDakika dk - @hizmet.Ucret TL</li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+}
+
+<hr />
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h4>Şube Ekle</h4>
+        <form asp-action="SubeEkle" method="post">
+            <select name="kurumId" class="form-select mb-2">
+                @foreach (var k in Model)
+                {
+                    <option value="@k.Id">@k.Ad</option>
+                }
+            </select>
+            <input name="ad" class="form-control mb-2" placeholder="Şube adı" required />
+            <input name="adres" class="form-control mb-2" placeholder="Adres" />
+            <div class="row mb-2">
+                <div class="col">Açılış <input type="time" name="acilis" class="form-control" value="08:00" /></div>
+                <div class="col">Kapanış <input type="time" name="kapanis" class="form-control" value="17:00" /></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <h4>Bölüm Ekle</h4>
+        <form asp-action="BolumEkle" method="post">
+            <select name="subeId" class="form-select mb-2">
+                @foreach (var k in Model)
+                {
+                    foreach (var s in k.Subeler)
+                    {
+                        <option value="@s.Id">@k.Ad - @s.Ad</option>
+                    }
+                }
+            </select>
+            <input name="ad" class="form-control mb-2" placeholder="Bölüm adı" required />
+            <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <h4>Hizmet Ekle</h4>
+        <form asp-action="HizmetEkle" method="post">
+            <select name="bolumId" class="form-select mb-2">
+                @foreach (var k in Model)
+                {
+                    foreach (var s in k.Subeler)
+                    {
+                        foreach (var b in s.Bolumler)
+                        {
+                            <option value="@b.Id">@k.Ad - @s.Ad - @b.Ad</option>
+                        }
+                    }
+                }
+            </select>
+            <input name="ad" class="form-control mb-2" placeholder="Hizmet adı" required />
+            <div class="row mb-2">
+                <div class="col"><input type="number" name="sureDakika" class="form-control" placeholder="Süre (dk)" required /></div>
+                <div class="col"><input type="number" name="ucret" class="form-control" placeholder="Ücret (TL)" required /></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Ekle</button>
+        </form>
+    </div>
+</div>

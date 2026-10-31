@@ -32,6 +32,9 @@ namespace HastaneRandevu.Controllers
             }
 
             await OturumAc(kullanici);
+
+            // Rolüne göre ilgili sayfaya gönder
+            if (kullanici is Yonetici || kullanici is SistemYoneticisi) return RedirectToAction("Index", "Yonetim");
             return RedirectToAction("Index", "Home");
         }
 

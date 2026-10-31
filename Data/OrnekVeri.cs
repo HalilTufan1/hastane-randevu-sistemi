@@ -45,6 +45,15 @@ namespace HastaneRandevu.Data
             db.Kurumlar.Add(hastane);
             db.Kurumlar.Add(klinik);
             db.SaveChanges();
+
+            // --- Her kurumun kendi yöneticisi ---
+            var hastaneYoneticisi = new Yonetici { Ad = "Elif", Soyad = "Demir", KullaniciAdi = "yonetici", KurumId = hastane.Id };
+            hastaneYoneticisi.SifreBelirle("yonetici123");
+            var klinikYoneticisi = new Yonetici { Ad = "Hakan", Soyad = "Aydın", KullaniciAdi = "klinik", KurumId = klinik.Id };
+            klinikYoneticisi.SifreBelirle("klinik123");
+            db.Yoneticiler.Add(hastaneYoneticisi);
+            db.Yoneticiler.Add(klinikYoneticisi);
+            db.SaveChanges();
         }
 
         // Şubede bölüm yoksa oluşturur ve bölüme hizmet ekler
