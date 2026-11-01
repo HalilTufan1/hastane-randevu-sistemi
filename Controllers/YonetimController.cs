@@ -114,5 +114,128 @@ namespace HastaneRandevu.Controllers
             }
             return RedirectToAction("Index");
         }
+
+        // ---------- Çalışanlar ----------
+
+        public IActionResult Calisanlar()
+        {
+            var kullanici = AktifKullanici();
+
+            ViewBag.Subeler = _db.Subeler.Include(s => s.Kurum).ToList()
+                .Where(s => kullanici.KurumuYonetebilirMi(s.KurumId)).ToList();
+            ViewBag.Hizmetler = _db.Hizmetler.Include(h => h.Bolum).ThenInclude(b => b!.Sube).ToList()
+                .Where(h => kullanici.KurumuYonetebilirMi(h.Bolum!.Sube!.KurumId)).ToList();
+
+            var calisanlar = _db.Calisanlar
+                .Include(c => c.Sube)
+                .Include(c => c.Hizmetler)
+                .ToList()
+                .Where(c => kullanici.KurumuYonetebilirMi(c.Sube!.KurumId))
+                .ToList();
+            return View(calisanlar);
+        }
+
+        [HttpPost]
+        public IActionResult CalisanEkle(string ad, string soyad, string kullaniciAdi, string sifre,
+            string unvan, string uzmanlik, int subeId, List<int> hizmetIdleri)
+        {
+            var sube = _db.Subeler.Find(subeId);
+            if (sube == null || !Yetkili(sube.KurumId))
+                return YetkiYok();
+
+            if (string.IsNullOrWhiteSpace(ad) || string.IsNullOrWhiteSpace(kullaniciAdi) || sifre == null || sifre.Length < 6)
+            {
+                TempData["Hata"] = "Ad, kullanıcı adı ve en az 6 karakterlik şifre gerekli.";
+                return RedirectToAction("Calisanlar");
+            }
+            if (_db.Kullanicilar.Any(k => k.KullaniciAdi == kullaniciAdi))
+            {
+                TempData["Hata"] = "Bu kullanıcı adı alınmış.";
+                return RedirectToAction("Calisanlar");
+            }
+
+            var calisan = new Calisan
+            {
+                Ad = ad,
+                Soyad = soyad ?? "",
+                KullaniciAdi = kullaniciAdi,
+                Unvan = unvan ?? "",
+                Uzmanlik = uzmanlik ?? "",
+                SubeId = subeId
+            };
+            calisan.SifreBelirle(sifre);
+
+            // Sadece çalışanın şubesindeki hizmetler eklenir
+            calisan.Hizmetler = _db.Hizmetler
+                .Where(h => hizmetIdleri.Contains(h.Id) && h.Bolum!.SubeId == subeId)
+                .ToList();
+
+            _db.Calisanlar.Add(calisan);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Çalışan eklendi. Şimdi çalışma saatlerini girin.";
+            return RedirectToAction("Uygunluk", new { id = calisan.Id });
+        }
+
+        private Calisan? CalisanGetir(int id)
+        {
+            return _db.Calisanlar
+                .Include(c => c.Sube)
+                .Include(c => c.Hizmetler)
+                .Include(c => c.UygunlukSaatleri)
+                .FirstOrDefault(c => c.Id == id);
+        }
+
+        // ---------- Çalışanın haftalık çalışma saatleri ----------
+
+        public IActionResult Uygunluk(int id)
+        {
+            var calisan = CalisanGetir(id);
+            if (calisan == null)
+                return NotFound();
+            if (!Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+            return View(calisan);
+        }
+
+        [HttpPost]
+        public IActionResult UygunlukEkle(int calisanId, DayOfWeek gun, TimeSpan baslangic, TimeSpan bitis)
+        {
+            var calisan = CalisanGetir(calisanId);
+            if (calisan == null || !Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+
+            if (bitis <= baslangic)
+                TempData["Hata"] = "Bitiş saati başlangıçtan sonra olmalıdır.";
+            else if (gun == DayOfWeek.Sunday)
+                TempData["Hata"] = "Pazar günü şubeler kapalı.";
+            else if (baslangic < calisan.Sube.AcilisSaati || bitis > calisan.Sube.KapanisSaati)
+                TempData["Hata"] = "Saatler şubenin çalışma saatleri içinde olmalıdır.";
+            else if (calisan.SaatCakisiyorMu(gun, baslangic, bitis))
+                TempData["Hata"] = "Bu saat, çalışanın o günkü başka bir çalışma saatiyle çakışıyor.";
+            else
+            {
+                _db.UygunlukSaatleri.Add(new UygunlukSaati { CalisanId = calisanId, Gun = gun, Baslangic = baslangic, Bitis = bitis });
+                _db.SaveChanges();
+                TempData["Mesaj"] = "Çalışma saati eklendi.";
+            }
+            return RedirectToAction("Uygunluk", new { id = calisanId });
+        }
+
+        [HttpPost]
+        public IActionResult UygunlukSil(int id)
+        {
+            var saat = _db.UygunlukSaatleri.Find(id);
+            if (saat == null)
+                return RedirectToAction("Calisanlar");
+
+            var calisan = CalisanGetir(saat.CalisanId);
+            if (calisan == null || !Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+
+            _db.UygunlukSaatleri.Remove(saat);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Çalışma saati silindi.";
+            return RedirectToAction("Uygunluk", new { id = saat.CalisanId });
+        }
     }
 }

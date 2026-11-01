@@ -1,0 +1,48 @@
+@model Calisan
+@{
+    ViewData["Title"] = "Çalışma Saatleri";
+}
+
+<h2>@Model.GorunenAd - Çalışma Saatleri</h2>
+<p>Şube: @Model.Sube?.Ad (@Model.Sube?.AcilisSaati.ToString(@"hh\:mm") - @Model.Sube?.KapanisSaati.ToString(@"hh\:mm"))</p>
+
+<table class="table table-bordered col-md-6">
+    <thead>
+        <tr><th>Gün</th><th>Başlangıç</th><th>Bitiş</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model.UygunlukSaatleri.OrderBy(u => u.Gun).ThenBy(u => u.Baslangic))
+        {
+            <tr>
+                <td>@Yardimci.GunAdi(u.Gun)</td>
+                <td>@u.Baslangic.ToString(@"hh\:mm")</td>
+                <td>@u.Bitis.ToString(@"hh\:mm")</td>
+                <td>
+                    <form asp-action="UygunlukSil" asp-route-id="@u.Id" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Çalışma Saati Ekle</h4>
+<form asp-action="UygunlukEkle" method="post" class="col-md-6">
+    <input type="hidden" name="calisanId" value="@Model.Id" />
+    <select name="gun" class="form-select mb-2">
+        <option value="Monday">Pazartesi</option>
+        <option value="Tuesday">Salı</option>
+        <option value="Wednesday">Çarşamba</option>
+        <option value="Thursday">Perşembe</option>
+        <option value="Friday">Cuma</option>
+        <option value="Saturday">Cumartesi</option>
+    </select>
+    <div class="row mb-2">
+        <div class="col">Başlangıç <input type="time" name="baslangic" class="form-control" value="09:00" /></div>
+        <div class="col">Bitiş <input type="time" name="bitis" class="form-control" value="12:00" /></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ekle</button>
+</form>
+
+<a class="d-block mt-3" asp-action="Calisanlar">Çalışanlara dön</a>
