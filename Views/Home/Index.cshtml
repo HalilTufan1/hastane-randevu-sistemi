@@ -11,6 +11,10 @@
         <a class="btn btn-primary" asp-controller="Hesap" asp-action="Giris">Giriş Yap</a>
         <a class="btn btn-outline-primary" asp-controller="Hesap" asp-action="Kayit">Hasta Kaydı</a>
     }
+    else if (User.IsInRole("Hasta"))
+    {
+        <a class="btn btn-primary" asp-controller="Hasta" asp-action="RandevuAl">Randevu Al</a>
+    }
 </div>
 
 <h3>Kurumlar</h3>
@@ -42,6 +46,7 @@
 {
     <h5>Deneme hesapları</h5>
     <ul>
+        <li>Hasta: <code>hasta</code> / <code>hasta123</code></li>
         <li>Hastane yöneticisi: <code>yonetici</code> / <code>yonetici123</code></li>
         <li>Klinik yöneticisi: <code>klinik</code> / <code>klinik123</code></li>
         <li>Üst düzey yönetici (admin): <code>admin</code> / <code>admin123</code></li>

@@ -74,6 +74,24 @@ namespace HastaneRandevu.Data
                     new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }, 10, 18),
             };
             db.Calisanlar.AddRange(calisanlar);
+
+            // --- Hastalar (şifreleri: hasta123) ---
+            string[] adlar = { "Ali", "Fatma", "Ahmet", "Zehra", "Mustafa", "Elif", "Emre", "Merve", "Hakan", "Büşra", "Murat", "Gizem", "Yusuf", "İrem", "Kerem" };
+            string[] soyadlar = { "Veli", "Çelik", "Yıldız", "Aydın", "Doğan", "Kurt", "Koç", "Aslan", "Polat", "Kara", "Şimşek", "Erdem", "Özkan", "Tekin", "Bulut" };
+            var hastalar = new List<Hasta>();
+            for (int i = 0; i < adlar.Length; i++)
+            {
+                var hasta = new Hasta
+                {
+                    Ad = adlar[i],
+                    Soyad = soyadlar[i],
+                    KullaniciAdi = i == 0 ? "hasta" : "hasta" + (i + 1),
+                    Telefon = "0555" + (1000000 + i * 12345)
+                };
+                hasta.SifreBelirle("hasta123");
+                hastalar.Add(hasta);
+            }
+            db.Hastalar.AddRange(hastalar);
             db.SaveChanges();
         }
 

@@ -1,4 +1,5 @@
 using HastaneRandevu.Data;
+using HastaneRandevu.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,8 @@ builder.Services.AddControllersWithViews();
 
 // Veritabanı: proje klasöründe hastane.db adında SQLite dosyası
 builder.Services.AddDbContext<UygulamaDbContext>(options => options.UseSqlite("Data Source=hastane.db"));
+
+builder.Services.AddScoped<RandevuServisi>();
 
 // Çerez (cookie) ile giriş
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

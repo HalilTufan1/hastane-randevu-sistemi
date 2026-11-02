@@ -34,6 +34,7 @@ namespace HastaneRandevu.Controllers
             await OturumAc(kullanici);
 
             // Rolüne göre ilgili sayfaya gönder
+            if (kullanici is Hasta) return RedirectToAction("Index", "Hasta");
             if (kullanici is Yonetici || kullanici is SistemYoneticisi) return RedirectToAction("Index", "Yonetim");
             return RedirectToAction("Index", "Home");
         }
@@ -68,7 +69,7 @@ namespace HastaneRandevu.Controllers
             _db.SaveChanges();
 
             await OturumAc(hasta);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Hasta");
         }
 
         [HttpPost]

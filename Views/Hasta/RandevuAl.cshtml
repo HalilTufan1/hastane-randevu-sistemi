@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Randevu Al";
+    var hizmetler = (List<Hizmet>)ViewBag.Hizmetler;
+    var calisanlar = (List<Calisan>)ViewBag.Calisanlar;
+    var bosSaatler = (List<DateTime>)ViewBag.BosSaatler;
+    DateTime? tarih = ViewBag.Tarih;
+}
+
+<h2>Randevu Al</h2>
+
+@* 1. adım: hizmet, çalışan ve tarih seçimi (sayfa yenilenerek ilerler) *@
+<form method="get" class="mb-4">
+    <div class="mb-3">
+        <label class="form-label">Hizmet</label>
+        <select name="hizmetId" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Hizmet seçin --</option>
+            @foreach (var h in hizmetler)
+            {
+                <option value="@h.Id" selected="@(h.Id == ViewBag.HizmetId)">
+                    @h.Bolum?.Sube?.Kurum?.Ad - @h.Bolum?.Sube?.Ad - @h.Bolum?.Ad - @h.Ad (@h.SureDakika dk, @h.Ucret TL)
+                </option>
+            }
+        </select>
+    </div>
+
+    @if (ViewBag.HizmetId != null)
+    {
+        <div class="mb-3">
+            <label class="form-label">Doktor / Personel</label>
+            <select name="calisanId" class="form-select">
+                <option value="">-- Seçin --</option>
+                @foreach (var c in calisanlar)
+                {
+                    <option value="@c.Id" selected="@(c.Id == ViewBag.CalisanId)">
+                        @c.GorunenAd - @c.Uzmanlik (Çalışma günleri: @string.Join(", ", c.UygunlukSaatleri.Select(u => Yardimci.GunAdi(u.Gun)).Distinct()))
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tarih</label>
+            <input type="date" name="tarih" class="form-control" value="@tarih?.ToString("yyyy-MM-dd")" />
+        </div>
+        <button type="submit" class="btn btn-secondary">Boş Saatleri Göster</button>
+    }
+</form>
+
+@* 2. adım: boş saatlerden birini seçip randevu oluşturma *@
+@if (tarih != null && ViewBag.CalisanId != null)
+{
+    <h4>@tarih?.ToString("dd.MM.yyyy") için boş saatler</h4>
+
+    @if (bosSaatler.Count == 0)
+    {
+        <p class="text-danger">Bu tarihte boş saat yok. Başka bir tarih seçin.</p>
+    }
+    else
+    {
+        <form asp-action="RandevuAl" method="post">
+            <input type="hidden" name="hizmetId" value="@ViewBag.HizmetId" />
+            <input type="hidden" name="calisanId" value="@ViewBag.CalisanId" />
+
+            <div class="mb-3">
+                @foreach (var saat in bosSaatler)
+                {
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="baslangic" id="s@(saat.Ticks)"
+                               value="@saat.ToString("yyyy-MM-ddTHH:mm")" required />
+                        <label class="form-check-label" for="s@(saat.Ticks)">@saat.ToString("HH:mm")</label>
+                    </div>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Not (isteğe bağlı)</label>
+                <textarea name="not" class="form-control" rows="2"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Randevu Al</button>
+        </form>
+    }
+}
