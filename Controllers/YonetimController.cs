@@ -9,6 +9,8 @@ namespace HastaneRandevu.Controllers
 {
     // Admin ve kurum yöneticisinin ortak sayfası.
     // Admin bütün kurumları, kurum yöneticisi sadece kendi kurumunu görür ve yönetir.
+    // Şube, bölüm, hizmet ve çalışan eklenebilir, düzenlenebilir ve silinebilir.
+    // Kurum ekleme / silme sadece AdminController'dadır.
     [Authorize(Roles = "Admin,Yonetici")]
     public class YonetimController : Controller
     {
@@ -79,6 +81,56 @@ namespace HastaneRandevu.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult SubeDuzenle(int id)
+        {
+            var sube = _db.Subeler.Find(id);
+            if (sube == null)
+                return NotFound();
+            if (!Yetkili(sube.KurumId))
+                return YetkiYok();
+            return View(sube);
+        }
+
+        [HttpPost]
+        public IActionResult SubeDuzenle(int id, string ad, string adres, TimeSpan acilis, TimeSpan kapanis)
+        {
+            var sube = _db.Subeler.Find(id);
+            if (sube == null)
+                return NotFound();
+            if (!Yetkili(sube.KurumId))
+                return YetkiYok();
+
+            if (string.IsNullOrWhiteSpace(ad) || kapanis <= acilis)
+            {
+                TempData["Hata"] = "Şube adı boş olamaz ve kapanış saati açılıştan sonra olmalıdır.";
+                return RedirectToAction("SubeDuzenle", new { id });
+            }
+
+            sube.Ad = ad;
+            sube.Adres = adres ?? "";
+            sube.AcilisSaati = acilis;
+            sube.KapanisSaati = kapanis;
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Şube güncellendi.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult SubeSil(int id)
+        {
+            var sube = _db.Subeler.Find(id);
+            if (sube == null)
+                return RedirectToAction("Index");
+            if (!Yetkili(sube.KurumId))
+                return YetkiYok();
+
+            // Şubeye bağlı bölümler, hizmetler, çalışanlar ve randevular da silinir
+            _db.Subeler.Remove(sube);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Şube silindi.";
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public IActionResult BolumEkle(int subeId, string ad)
         {
@@ -97,6 +149,49 @@ namespace HastaneRandevu.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult BolumDuzenle(int id)
+        {
+            var bolum = _db.Bolumler.Include(b => b.Sube).FirstOrDefault(b => b.Id == id);
+            if (bolum == null)
+                return NotFound();
+            if (!Yetkili(bolum.Sube!.KurumId))
+                return YetkiYok();
+            return View(bolum);
+        }
+
+        [HttpPost]
+        public IActionResult BolumDuzenle(int id, string ad)
+        {
+            var bolum = _db.Bolumler.Include(b => b.Sube).FirstOrDefault(b => b.Id == id);
+            if (bolum == null)
+                return NotFound();
+            if (!Yetkili(bolum.Sube!.KurumId))
+                return YetkiYok();
+
+            if (!string.IsNullOrWhiteSpace(ad))
+            {
+                bolum.Ad = ad;
+                _db.SaveChanges();
+                TempData["Mesaj"] = "Bölüm güncellendi.";
+            }
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult BolumSil(int id)
+        {
+            var bolum = _db.Bolumler.Include(b => b.Sube).FirstOrDefault(b => b.Id == id);
+            if (bolum == null)
+                return RedirectToAction("Index");
+            if (!Yetkili(bolum.Sube!.KurumId))
+                return YetkiYok();
+
+            _db.Bolumler.Remove(bolum);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Bölüm silindi.";
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public IActionResult HizmetEkle(int bolumId, string ad, int sureDakika, int ucret)
         {
@@ -112,6 +207,60 @@ namespace HastaneRandevu.Controllers
                 _db.SaveChanges();
                 TempData["Mesaj"] = "Hizmet eklendi.";
             }
+            return RedirectToAction("Index");
+        }
+
+        private Hizmet? HizmetGetir(int id)
+        {
+            return _db.Hizmetler.Include(h => h.Bolum).ThenInclude(b => b!.Sube).FirstOrDefault(h => h.Id == id);
+        }
+
+        public IActionResult HizmetDuzenle(int id)
+        {
+            var hizmet = HizmetGetir(id);
+            if (hizmet == null)
+                return NotFound();
+            if (!Yetkili(hizmet.Bolum!.Sube!.KurumId))
+                return YetkiYok();
+            return View(hizmet);
+        }
+
+        [HttpPost]
+        public IActionResult HizmetDuzenle(int id, string ad, int sureDakika, int ucret)
+        {
+            var hizmet = HizmetGetir(id);
+            if (hizmet == null)
+                return NotFound();
+            if (!Yetkili(hizmet.Bolum!.Sube!.KurumId))
+                return YetkiYok();
+
+            if (string.IsNullOrWhiteSpace(ad) || sureDakika <= 0 || ucret < 0)
+            {
+                TempData["Hata"] = "Hizmet adı, süresi ve ücreti doğru girilmelidir.";
+                return RedirectToAction("HizmetDuzenle", new { id });
+            }
+
+            // Not: eski randevuların ücreti değişmez, çünkü ücret randevuya ayrıca kaydedilir
+            hizmet.Ad = ad;
+            hizmet.SureDakika = sureDakika;
+            hizmet.Ucret = ucret;
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Hizmet güncellendi.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult HizmetSil(int id)
+        {
+            var hizmet = HizmetGetir(id);
+            if (hizmet == null)
+                return RedirectToAction("Index");
+            if (!Yetkili(hizmet.Bolum!.Sube!.KurumId))
+                return YetkiYok();
+
+            _db.Hizmetler.Remove(hizmet);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Hizmet silindi.";
             return RedirectToAction("Index");
         }
 
@@ -185,6 +334,67 @@ namespace HastaneRandevu.Controllers
                 .FirstOrDefault(c => c.Id == id);
         }
 
+        public IActionResult CalisanDuzenle(int id)
+        {
+            var calisan = CalisanGetir(id);
+            if (calisan == null)
+                return NotFound();
+            if (!Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+
+            // Sadece çalışanın şubesindeki hizmetler seçilebilir
+            ViewBag.Hizmetler = _db.Hizmetler.Include(h => h.Bolum)
+                .Where(h => h.Bolum!.SubeId == calisan.SubeId)
+                .ToList();
+            return View(calisan);
+        }
+
+        [HttpPost]
+        public IActionResult CalisanDuzenle(int id, string ad, string soyad, string unvan, string uzmanlik, List<int> hizmetIdleri)
+        {
+            var calisan = CalisanGetir(id);
+            if (calisan == null)
+                return NotFound();
+            if (!Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+
+            if (string.IsNullOrWhiteSpace(ad))
+            {
+                TempData["Hata"] = "Ad boş olamaz.";
+                return RedirectToAction("CalisanDuzenle", new { id });
+            }
+
+            calisan.Ad = ad;
+            calisan.Soyad = soyad ?? "";
+            calisan.Unvan = unvan ?? "";
+            calisan.Uzmanlik = uzmanlik ?? "";
+
+            calisan.Hizmetler.Clear();
+            calisan.Hizmetler.AddRange(_db.Hizmetler
+                .Where(h => hizmetIdleri.Contains(h.Id) && h.Bolum!.SubeId == calisan.SubeId)
+                .ToList());
+
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Çalışan güncellendi.";
+            return RedirectToAction("Calisanlar");
+        }
+
+        [HttpPost]
+        public IActionResult CalisanSil(int id)
+        {
+            var calisan = _db.Calisanlar.Include(c => c.Sube).FirstOrDefault(c => c.Id == id);
+            if (calisan == null)
+                return RedirectToAction("Calisanlar");
+            if (!Yetkili(calisan.Sube!.KurumId))
+                return YetkiYok();
+
+            // Çalışanın çalışma saatleri ve randevuları da silinir
+            _db.Calisanlar.Remove(calisan);
+            _db.SaveChanges();
+            TempData["Mesaj"] = "Çalışan silindi.";
+            return RedirectToAction("Calisanlar");
+        }
+
         // ---------- Çalışanın haftalık çalışma saatleri ----------
 
         public IActionResult Uygunluk(int id)
@@ -236,6 +446,51 @@ namespace HastaneRandevu.Controllers
             _db.SaveChanges();
             TempData["Mesaj"] = "Çalışma saati silindi.";
             return RedirectToAction("Uygunluk", new { id = saat.CalisanId });
+        }
+
+        // ---------- Randevular ----------
+
+        public IActionResult Randevular()
+        {
+            var kullanici = AktifKullanici();
+            var randevular = _db.Randevular
+                .Include(r => r.Hasta)
+                .Include(r => r.Calisan).ThenInclude(c => c!.Sube)
+                .Include(r => r.Hizmet)
+                .OrderByDescending(r => r.Baslangic)
+                .ToList()
+                .Where(r => kullanici.KurumuYonetebilirMi(r.Calisan!.Sube!.KurumId))
+                .ToList();
+            return View(randevular);
+        }
+
+        private Randevu? RandevuGetir(int id)
+        {
+            return _db.Randevular.Include(r => r.Calisan).ThenInclude(c => c!.Sube).FirstOrDefault(r => r.Id == id);
+        }
+
+        [HttpPost]
+        public IActionResult Onayla(int id)
+        {
+            var randevu = RandevuGetir(id);
+            if (randevu == null || !Yetkili(randevu.Calisan!.Sube!.KurumId))
+                return YetkiYok();
+
+            if (randevu.Onayla())
+                _db.SaveChanges();
+            return RedirectToAction("Randevular");
+        }
+
+        [HttpPost]
+        public IActionResult Reddet(int id)
+        {
+            var randevu = RandevuGetir(id);
+            if (randevu == null || !Yetkili(randevu.Calisan!.Sube!.KurumId))
+                return YetkiYok();
+
+            if (randevu.Reddet())
+                _db.SaveChanges();
+            return RedirectToAction("Randevular");
         }
     }
 }

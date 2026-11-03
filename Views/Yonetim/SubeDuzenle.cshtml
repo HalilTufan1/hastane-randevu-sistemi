@@ -1,0 +1,19 @@
+@model Sube
+@{
+    ViewData["Title"] = "Şube Düzenle";
+}
+
+<h2>Şube Düzenle</h2>
+
+<form asp-action="SubeDuzenle" asp-route-id="@Model.Id" method="post" class="col-md-5">
+    <label class="form-label">Şube adı</label>
+    <input name="ad" class="form-control mb-2" value="@Model.Ad" required />
+    <label class="form-label">Adres</label>
+    <input name="adres" class="form-control mb-2" value="@Model.Adres" />
+    <div class="row mb-3">
+        <div class="col">Açılış <input type="time" name="acilis" class="form-control" value="@Model.AcilisSaati.ToString(@"hh\:mm")" /></div>
+        <div class="col">Kapanış <input type="time" name="kapanis" class="form-control" value="@Model.KapanisSaati.ToString(@"hh\:mm")" /></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

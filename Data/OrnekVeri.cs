@@ -93,6 +93,61 @@ namespace HastaneRandevu.Data
             }
             db.Hastalar.AddRange(hastalar);
             db.SaveChanges();
+
+            // --- Randevular: son 14 gün ve önümüzdeki 14 gün ---
+            var rastgele = new Random(42);
+            var randevular = new List<Randevu>();
+            for (int gunFarki = -14; gunFarki <= 14; gunFarki++)
+            {
+                DateTime gun = DateTime.Today.AddDays(gunFarki);
+                foreach (var calisan in calisanlar)
+                {
+                    foreach (var saat in calisan.UygunlukSaatleri.Where(u => u.Gun == gun.DayOfWeek))
+                    {
+                        var hizmet = calisan.Hizmetler[rastgele.Next(calisan.Hizmetler.Count)];
+                        DateTime baslangic = gun + saat.Baslangic;
+
+                        while (baslangic.AddMinutes(hizmet.SureDakika) <= gun + saat.Bitis)
+                        {
+                            DateTime bitis = baslangic.AddMinutes(hizmet.SureDakika);
+                            var hasta = hastalar[rastgele.Next(hastalar.Count)];
+                            bool hastaMusait = !randevular.Any(r => r.HastaId == hasta.Id && r.CakisiyorMu(baslangic, bitis));
+
+                            // Her saati doldurmamak için %20 ihtimalle randevu oluştur
+                            if (hastaMusait && rastgele.Next(100) < 20)
+                            {
+                                var randevu = new Randevu
+                                {
+                                    HastaId = hasta.Id,
+                                    CalisanId = calisan.Id,
+                                    HizmetId = hizmet.Id,
+                                    Baslangic = baslangic,
+                                    Bitis = bitis,
+                                    Ucret = hizmet.Ucret
+                                };
+                                int zar = rastgele.Next(100);
+                                if (gunFarki < 0)
+                                {
+                                    // Geçmiş randevuların çoğu onaylanmış olsun
+                                    if (zar < 80) randevu.Onayla();
+                                    else if (zar < 90) randevu.IptalEt();
+                                    else randevu.Reddet();
+                                }
+                                else
+                                {
+                                    if (zar < 45) randevu.Onayla();
+                                    else if (zar < 55) randevu.IptalEt();
+                                    // geri kalanı onay bekliyor
+                                }
+                                randevular.Add(randevu);
+                            }
+                            baslangic = bitis;
+                        }
+                    }
+                }
+            }
+            db.Randevular.AddRange(randevular);
+            db.SaveChanges();
         }
 
         // Şubede bölüm yoksa oluşturur ve bölüme hizmet ekler

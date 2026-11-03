@@ -27,6 +27,11 @@
                 <td>@string.Join(", ", c.Hizmetler.Select(h => h.Ad))</td>
                 <td>
                     <a class="btn btn-sm btn-outline-primary" asp-action="Uygunluk" asp-route-id="@c.Id">Çalışma Saatleri</a>
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="CalisanDuzenle" asp-route-id="@c.Id">Düzenle</a>
+                    <form asp-action="CalisanSil" asp-route-id="@c.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Çalışan ve randevuları silinecek. Emin misiniz?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
                 </td>
             </tr>
         }

@@ -25,10 +25,15 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="Hasta" asp-action="Index">Randevularım</a></li>
                         }
 
+                        @if (User.IsInRole("Calisan"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Calisan" asp-action="Index">Randevularım</a></li>
+                        }
                         @if (User.IsInRole("Yonetici") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item"><a class="nav-link" asp-controller="Yonetim" asp-action="Index">Kurumlar</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Yonetim" asp-action="Calisanlar">Çalışanlar</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Yonetim" asp-action="Randevular">Randevular</a></li>
                         }
                     </ul>
 

@@ -17,16 +17,35 @@
             }
             @foreach (var sube in kurum.Subeler)
             {
-                <h5>@sube.Ad <small class="text-muted">@sube.Adres - @sube.AcilisSaati.ToString(@"hh\:mm")-@sube.KapanisSaati.ToString(@"hh\:mm")</small></h5>
+                <h5>
+                    @sube.Ad <small class="text-muted">@sube.Adres - @sube.AcilisSaati.ToString(@"hh\:mm")-@sube.KapanisSaati.ToString(@"hh\:mm")</small>
+                    <a class="btn btn-sm btn-link" asp-action="SubeDuzenle" asp-route-id="@sube.Id">Düzenle</a>
+                    <form asp-action="SubeSil" asp-route-id="@sube.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Şube ve ona bağlı bölüm, hizmet, çalışan ve randevular silinecek. Emin misiniz?')">
+                        <button type="submit" class="btn btn-sm btn-link text-danger">Sil</button>
+                    </form>
+                </h5>
                 <ul>
                     @foreach (var bolum in sube.Bolumler)
                     {
                         <li>
                             <b>@bolum.Ad</b>
+                            <a class="btn btn-sm btn-link py-0" asp-action="BolumDuzenle" asp-route-id="@bolum.Id">Düzenle</a>
+                            <form asp-action="BolumSil" asp-route-id="@bolum.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Bölüm ve hizmetleri silinecek. Emin misiniz?')">
+                                <button type="submit" class="btn btn-sm btn-link text-danger py-0">Sil</button>
+                            </form>
                             <ul>
                                 @foreach (var hizmet in bolum.Hizmetler)
                                 {
-                                    <li>@hizmet.Ad - @hizmet.SureDakika dk - @hizmet.Ucret TL</li>
+                                    <li>
+                                        @hizmet.Ad - @hizmet.SureDakika dk - @hizmet.Ucret TL
+                                        <a class="btn btn-sm btn-link py-0" asp-action="HizmetDuzenle" asp-route-id="@hizmet.Id">Düzenle</a>
+                                        <form asp-action="HizmetSil" asp-route-id="@hizmet.Id" method="post" class="d-inline"
+                                              onsubmit="return confirm('Hizmet ve bu hizmete ait randevular silinecek. Emin misiniz?')">
+                                            <button type="submit" class="btn btn-sm btn-link text-danger py-0">Sil</button>
+                                        </form>
+                                    </li>
                                 }
                             </ul>
                         </li>

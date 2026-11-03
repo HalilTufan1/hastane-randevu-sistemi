@@ -1,0 +1,19 @@
+@model Hizmet
+@{
+    ViewData["Title"] = "Hizmet Düzenle";
+}
+
+<h2>Hizmet Düzenle</h2>
+<p>@Model.Bolum?.Sube?.Ad - @Model.Bolum?.Ad</p>
+
+<form asp-action="HizmetDuzenle" asp-route-id="@Model.Id" method="post" class="col-md-5">
+    <label class="form-label">Hizmet adı</label>
+    <input name="ad" class="form-control mb-2" value="@Model.Ad" required />
+    <div class="row mb-3">
+        <div class="col">Süre (dk) <input type="number" name="sureDakika" class="form-control" value="@Model.SureDakika" required /></div>
+        <div class="col">Ücret (TL) <input type="number" name="ucret" class="form-control" value="@Model.Ucret" required /></div>
+    </div>
+    <p class="text-muted small">Ücret değişikliği önceden alınmış randevuları etkilemez.</p>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

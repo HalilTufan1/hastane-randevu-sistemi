@@ -35,8 +35,8 @@ namespace HastaneRandevu.Controllers
 
             // Rolüne göre ilgili sayfaya gönder
             if (kullanici is Hasta) return RedirectToAction("Index", "Hasta");
-            if (kullanici is Yonetici || kullanici is SistemYoneticisi) return RedirectToAction("Index", "Yonetim");
-            return RedirectToAction("Index", "Home");
+            if (kullanici is Calisan) return RedirectToAction("Index", "Calisan");
+            return RedirectToAction("Index", "Yonetim");
         }
 
         public IActionResult Kayit()

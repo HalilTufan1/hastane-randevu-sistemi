@@ -1,0 +1,32 @@
+@model Calisan
+@{
+    ViewData["Title"] = "Çalışan Düzenle";
+    var hizmetler = (List<Hizmet>)ViewBag.Hizmetler;
+}
+
+<h2>Çalışan Düzenle</h2>
+<p>Kullanıcı adı: @Model.KullaniciAdi - Şube: @Model.Sube?.Ad</p>
+
+<form asp-action="CalisanDuzenle" asp-route-id="@Model.Id" method="post" class="col-md-6">
+    <div class="row mb-2">
+        <div class="col">Ad <input name="ad" class="form-control" value="@Model.Ad" required /></div>
+        <div class="col">Soyad <input name="soyad" class="form-control" value="@Model.Soyad" /></div>
+    </div>
+    <div class="row mb-2">
+        <div class="col">Unvan <input name="unvan" class="form-control" value="@Model.Unvan" /></div>
+        <div class="col">Uzmanlık <input name="uzmanlik" class="form-control" value="@Model.Uzmanlik" /></div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Verdiği hizmetler</label>
+        @foreach (var h in hizmetler)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hizmetIdleri" value="@h.Id" id="h@(h.Id)"
+                       checked="@Model.Hizmetler.Any(x => x.Id == h.Id)" />
+                <label class="form-check-label" for="h@(h.Id)">@h.Bolum?.Ad - @h.Ad</label>
+            </div>
+        }
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Calisanlar" class="btn btn-secondary">Vazgeç</a>
+</form>

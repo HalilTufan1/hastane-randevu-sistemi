@@ -1,0 +1,56 @@
+@model List<Randevu>
+@{
+    ViewData["Title"] = "Randevularım";
+    var calisan = (Calisan)ViewBag.Calisan;
+}
+
+<h2>@calisan.GorunenAd</h2>
+<p>
+    Uzmanlık: @calisan.Uzmanlik <br />
+    Şube: @calisan.Sube?.Ad <br />
+    Verdiği hizmetler: @string.Join(", ", calisan.Hizmetler.Select(h => h.Ad)) <br />
+    Çalışma saatleri:
+    @foreach (var u in calisan.UygunlukSaatleri.OrderBy(u => u.Gun).ThenBy(u => u.Baslangic))
+    {
+        <span class="badge bg-light text-dark border">@Yardimci.GunAdi(u.Gun) @u.Baslangic.ToString(@"hh\:mm")-@u.Bitis.ToString(@"hh\:mm")</span>
+    }
+</p>
+
+<h4>Randevular</h4>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Saat</th>
+            <th>Hasta</th>
+            <th>Hizmet</th>
+            <th>Not</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Baslangic.ToString("dd.MM.yyyy")</td>
+                <td>@r.Baslangic.ToString("HH:mm") - @r.Bitis.ToString("HH:mm")</td>
+                <td>@r.Hasta?.GorunenAd</td>
+                <td>@r.Hizmet?.Ad</td>
+                <td>@r.Not</td>
+                <td><span class="badge bg-@Yardimci.DurumRengi(r.Durum)">@r.DurumYazisi()</span></td>
+                <td>
+                    @if (r.Durum == RandevuDurumu.OnayBekliyor)
+                    {
+                        <form asp-action="Onayla" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Onayla</button>
+                        </form>
+                        <form asp-action="Reddet" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Reddet</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

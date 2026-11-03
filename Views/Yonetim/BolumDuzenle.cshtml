@@ -1,0 +1,14 @@
+@model Bolum
+@{
+    ViewData["Title"] = "Bölüm Düzenle";
+}
+
+<h2>Bölüm Düzenle</h2>
+<p>Şube: @Model.Sube?.Ad</p>
+
+<form asp-action="BolumDuzenle" asp-route-id="@Model.Id" method="post" class="col-md-5">
+    <label class="form-label">Bölüm adı</label>
+    <input name="ad" class="form-control mb-3" value="@Model.Ad" required />
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

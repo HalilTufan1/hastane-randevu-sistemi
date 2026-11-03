@@ -1,0 +1,46 @@
+@model List<Randevu>
+@{
+    ViewData["Title"] = "Randevular";
+}
+
+<h2>Tüm Randevular</h2>
+<p>Toplam @Model.Count randevu, @Model.Count(r => r.Durum == RandevuDurumu.OnayBekliyor) tanesi onay bekliyor.</p>
+
+<table class="table table-bordered table-striped table-sm">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Saat</th>
+            <th>Hasta</th>
+            <th>Doktor / Personel</th>
+            <th>Hizmet</th>
+            <th>Ücret</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Baslangic.ToString("dd.MM.yyyy")</td>
+                <td>@r.Baslangic.ToString("HH:mm")</td>
+                <td>@r.Hasta?.GorunenAd</td>
+                <td>@r.Calisan?.GorunenAd</td>
+                <td>@r.Hizmet?.Ad</td>
+                <td>@r.Ucret TL</td>
+                <td><span class="badge bg-@Yardimci.DurumRengi(r.Durum)">@r.DurumYazisi()</span></td>
+                <td>
+                    @if (r.Durum == RandevuDurumu.OnayBekliyor)
+                    {
+                        <form asp-action="Onayla" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Onayla</button>
+                        </form>
+                        <form asp-action="Reddet" asp-route-id="@r.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Reddet</button>
+                        </form>
+                    }                </td>
+            </tr>
+        }
+    </tbody>
+</table>
