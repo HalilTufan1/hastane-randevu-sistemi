@@ -9,7 +9,19 @@
 @foreach (var kurum in Model)
 {
     <div class="card mb-3">
-        <div class="card-header"><b>@kurum.Ad</b> (@kurum.Tur)</div>
+        <div class="card-header d-flex justify-content-between">
+            <span><b>@kurum.Ad</b> (@kurum.Tur)</span>
+            @if (admin)
+            {
+                <span>
+                    <a class="btn btn-sm btn-outline-secondary" asp-controller="Admin" asp-action="KurumDuzenle" asp-route-id="@kurum.Id">Düzenle</a>
+                    <form asp-controller="Admin" asp-action="KurumSil" asp-route-id="@kurum.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Kurum ve ona bağlı her şey (şubeler, çalışanlar, randevular) silinecek. Emin misiniz?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </span>
+            }
+        </div>
         <div class="card-body">
             @if (kurum.Subeler.Count == 0)
             {
@@ -58,6 +70,21 @@
 
 <hr />
 <div class="row">
+    @if (admin)
+    {
+        <div class="col-md-6 mb-4">
+            <h4>Kurum Ekle</h4>
+            <form asp-controller="Admin" asp-action="KurumEkle" method="post">
+                <input name="ad" class="form-control mb-2" placeholder="Kurum adı" required />
+                <select name="tur" class="form-select mb-2">
+                    <option>Hastane</option>
+                    <option>Klinik</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Ekle</button>
+            </form>
+        </div>
+    }
+
     <div class="col-md-6 mb-4">
         <h4>Şube Ekle</h4>
         <form asp-action="SubeEkle" method="post">

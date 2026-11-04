@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Kullanıcılar";
+    var kurumlar = (List<Kurum>)ViewBag.Kurumlar;
+    var yoneticiler = (List<Yonetici>)ViewBag.Yoneticiler;
+    var hastalar = (List<Hasta>)ViewBag.Hastalar;
+}
+
+<h2>Kurum Yöneticileri</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr><th>Ad Soyad</th><th>Kullanıcı Adı</th><th>Kurum</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var y in yoneticiler)
+        {
+            <tr>
+                <td>@y.GorunenAd</td>
+                <td>@y.KullaniciAdi</td>
+                <td>@y.Kurum?.Ad</td>
+                <td>
+                    <form asp-action="KullaniciSil" asp-route-id="@y.Id" method="post" onsubmit="return confirm('Yönetici silinsin mi?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Kurum Yöneticisi Ekle</h4>
+<form asp-action="YoneticiEkle" method="post" class="col-md-8 mb-5">
+    <div class="row mb-2">
+        <div class="col"><input name="ad" class="form-control" placeholder="Ad" required /></div>
+        <div class="col"><input name="soyad" class="form-control" placeholder="Soyad" required /></div>
+    </div>
+    <div class="row mb-2">
+        <div class="col"><input name="kullaniciAdi" class="form-control" placeholder="Kullanıcı adı" required /></div>
+        <div class="col"><input name="sifre" type="password" class="form-control" placeholder="Şifre (en az 6 karakter)" required /></div>
+    </div>
+    <select name="kurumId" class="form-select mb-2">
+        @foreach (var k in kurumlar)
+        {
+            <option value="@k.Id">@k.Ad</option>
+        }
+    </select>
+    <button type="submit" class="btn btn-primary">Ekle</button>
+</form>
+
+<h2>Hastalar</h2>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr><th>Ad Soyad</th><th>Kullanıcı Adı</th><th>Telefon</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var h in hastalar)
+        {
+            <tr>
+                <td>@h.GorunenAd</td>
+                <td>@h.KullaniciAdi</td>
+                <td>@h.Telefon</td>
+                <td>
+                    <form asp-action="KullaniciSil" asp-route-id="@h.Id" method="post" onsubmit="return confirm('Hasta ve tüm randevuları silinsin mi?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

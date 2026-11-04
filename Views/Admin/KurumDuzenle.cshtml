@@ -1,0 +1,18 @@
+@model Kurum
+@{
+    ViewData["Title"] = "Kurum Düzenle";
+}
+
+<h2>Kurum Düzenle</h2>
+
+<form asp-action="KurumDuzenle" asp-route-id="@Model.Id" method="post" class="col-md-5">
+    <label class="form-label">Kurum adı</label>
+    <input name="ad" class="form-control mb-2" value="@Model.Ad" required />
+    <label class="form-label">Tür</label>
+    <select name="tur" class="form-select mb-3">
+        <option selected="@(Model.Tur == "Hastane")">Hastane</option>
+        <option selected="@(Model.Tur == "Klinik")">Klinik</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-controller="Yonetim" asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

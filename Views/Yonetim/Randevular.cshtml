@@ -39,7 +39,15 @@
                         <form asp-action="Reddet" asp-route-id="@r.Id" method="post" class="d-inline">
                             <button type="submit" class="btn btn-sm btn-danger">Reddet</button>
                         </form>
-                    }                </td>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <form asp-controller="Admin" asp-action="RandevuSil" asp-route-id="@r.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Randevu kalıcı olarak silinsin mi?')">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Sil</button>
+                        </form>
+                    }
+                </td>
             </tr>
         }
     </tbody>
